@@ -1,7 +1,7 @@
 library(readxl)
 library(purrr)
 library(dplyr)
-setwd('~/Documents/Int_fin/cpi')
+
 # Read in quarterly CPI data and calcualte annual averages to allign CPI data with spot rate data
 us_cpi <- read.csv('./USACPIALLMINMEI.csv')
 uk_cpi <- read.csv('./GBRCPIALLMINMEI.csv')
@@ -56,12 +56,14 @@ in_spot_rates[,2]  <- 1/(in_spot_rates[,2])
 
 # Computing Relative PPP - USA is always the home currency
 
+# Helper function
 get_rate <- function(df,year){
   out <- df[(which(df[,1]==year)),2]
   return(out)
 }
 
-get_ppp_df <- function(base_year,end_year,foreign_spot,foreign_cpi){
+# Calcualte RPP for every year where t-1 is a fixed base year
+get_long_rpp <- function(base_year,end_year,foreign_spot,foreign_cpi){
   base_spot <- get_rate(foreign_spot,base_year)
   us_base_cpi <- get_rate(us_cpi_annual,base_year)
   f_base_cpi  <- get_rate(foreign_cpi,base_year)
@@ -78,13 +80,17 @@ get_ppp_df <- function(base_year,end_year,foreign_spot,foreign_cpi){
   return(out)
 }
 
-
-# Variations in the validity of Relative PPP for US Dollar against UK Pound sterling from 1971 to 2018
-uk_rppp <- get_ppp_df(1971,2018,uk_spot_rates,uk_cpi_annual)
-
-# Variations in the validity of Relative PPP for US Dollar against Indian Rupee from 1973 to 2018
-in_rpp <- get_ppp_df(1973,2018,in_spot_rates,in_cpi_annual)
-
-# Post Euro France & Germany
-fr_rppp <-get_ppp_df(2000,2018,eu_spot_rates,fr_cpi_annual)
-gr_rpp <- get_ppp_df(2000,2018,eu_spot_rates,gr_cpi_annual)
+# Calculate RPPP for a group of years where t-1 is the prevous year
+get_short_rpp <- function(start_year,end_year,foreign_spot,foreign_cpi){
+  years <- c((start_year+1):end_year)
+  
+  delta_spot <- unlist(purrr::map(years,function(x) log(get_rate(foreign_spot,x)) - log(get_rate(foreign_spot,(x-1))) ))
+  home_inflation <- unlist(purrr::map(years,function(x) log(get_rate(us_cpi_annual,x)) - log(get_rate(us_cpi_annual,(x-1))) ))
+  f_inflation <- unlist(purrr::map(years,function(x) log(get_rate(foreign_cpi,x)) - log(get_rate(foreign_cpi,(x-1))) ))
+  delta_inflation <- home_inflation - f_inflation
+  rppp <- delta_spot - delta_inflation
+  absolute_error <- abs(rppp)
+  
+  out <- as.data.frame(cbind(years,home_inflation,f_inflation,delta_inflation,rppp, absolute_error))
+  return(out)
+}
