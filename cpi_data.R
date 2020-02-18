@@ -1,7 +1,7 @@
 library(readxl)
 library(purrr)
 library(dplyr)
-
+library(ggplot2)
 # Read in quarterly CPI data and calcualte annual averages to allign CPI data with spot rate data
 us_cpi <- read.csv('./USACPIALLMINMEI.csv')
 uk_cpi <- read.csv('./GBRCPIALLMINMEI.csv')
@@ -76,7 +76,7 @@ get_long_rpp <- function(base_year,end_year,foreign_spot,foreign_cpi){
   rppp <- delta_spot - delta_inflation
   absolute_error <- abs(rppp)
 
-  out <- as.data.frame(cbind(years,home_inflation,f_inflation,delta_inflation,rppp, absolute_error))
+  out <- as.data.frame(cbind(years,delta_spot,home_inflation,f_inflation,delta_inflation,rppp, absolute_error))
   return(out)
 }
 
@@ -91,6 +91,22 @@ get_short_rpp <- function(start_year,end_year,foreign_spot,foreign_cpi){
   rppp <- delta_spot - delta_inflation
   absolute_error <- abs(rppp)
   
-  out <- as.data.frame(cbind(years,home_inflation,f_inflation,delta_inflation,rppp, absolute_error))
+  out <- as.data.frame(cbind(years,delta_spot,home_inflation,f_inflation,delta_inflation,rppp, absolute_error))
   return(out)
 }
+
+india_short_rpp_values <- get_short_rpp(1973,2018,in_spot_rates,in_cpi_annual)
+india_spot_change <- india_short_rpp_values$delta_spot * 100
+india_inflation_delta <- india_short_rpp_values$delta_inflation * 100
+india_rppp_error <- india_short_rpp_values$rppp * 100
+years <- c(1974:2018)
+india_plot_data <- data.frame(years,india_spot_change,india_inflation_delta,india_rppp_error,rep("India",times=length(india_spot_change)))
+names <- c("Year","Spot rate change","Inflation rate difference","RPPP error","Country")
+colnames(india_plot_data) <- names
+
+uk_short_rpp_values <- get_short_rpp(1973,2018,uk_spot_rates,uk_cpi_annual)
+uk_spot_change <- uk_short_rpp_values$delta_spot * 100
+uk_inflation_delta <- uk_short_rpp_values$delta_inflation * 100
+uk_rppp_error <- uk_short_rpp_values$rppp * 100
+uk_plot_data <- data.frame(years,uk_spot_change,uk_inflation_delta,uk_rppp_error,rep("UK",times=length(uk_spot_change)))
+colnames(uk_plot_data) <- names
