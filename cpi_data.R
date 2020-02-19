@@ -3,12 +3,14 @@ library(purrr)
 library(dplyr)
 library(ggplot2)
 library(varhandle)
+
 # Read in quarterly CPI data and calcualte annual averages to allign CPI data with spot rate data
 us_cpi <- read.csv('./USACPIALLMINMEI.csv')
 uk_cpi <- read.csv('./GBRCPIALLMINMEI.csv')
 fr_cpi <- read.csv('./FRACPIALLMINMEI.csv')
 gr_cpi <- read.csv('./DEUCPIALLMINMEI.csv')
 in_cpi <- read.csv('./INDCPIALLMINMEI.csv')
+ch_cpi <- read.csv('./CHNCPIALLMINMEI.csv')
 
 annualise <- function(dframe,start_year){
   out_df <- data.frame(Year=character(),Average_CPI=double(),stringsAsFactors = FALSE)
@@ -33,30 +35,25 @@ uk_cpi_annual <- annualise(uk_cpi,1960)
 fr_cpi_annual <- annualise(fr_cpi,1960)
 gr_cpi_annual <- annualise(gr_cpi,1960)
 in_cpi_annual <- annualise(in_cpi,1960)
+ch_cpi_annual <- annualise(ch_cpi,1993)
 
-# Read in spot rate data, trim date structure and express all rates in USD per foreign currency
+# Read in spot rate data, trim date structure
+# direct spot rates needed, conversion applied where necessary
 
 uk_spot_rates <- read.csv('./AEXUSUK.csv',stringsAsFactors = FALSE)
 uk_spot_rates[,1] <- as.numeric(substr(uk_spot_rates[,1],1,4))
+uk_spot_rates[,2] <- 1/(uk_spot_rates[,2])
 
-### Need to check data source, values look right but column header is alarming...
-eu_spot_rates <- read.csv('./EXUSEU.csv',stringsAsFactors = FALSE)
+eu_spot_rates <- read.csv('./AEXUSEU.csv',stringsAsFactors = FALSE)
 eu_spot_rates[,1] <- as.numeric(substr(eu_spot_rates[,1],1,4))
-eu_spot_rates <- annualise(eu_spot_rates,1999)
-
-fr_spot_rates <- read.csv('./CCUSMA02FRA618N.csv',stringsAsFactors = FALSE)
-fr_spot_rates[,1] <- as.numeric(substr(fr_spot_rates[,1],1,4))
-fr_spot_rates[,2]  <- 1/(fr_spot_rates[,2])
-
-gr_spot_rates <- read.csv('./CCUSSP01DEA650N.csv', stringsAsFactors = FALSE)
-gr_spot_rates[,1] <- as.numeric(substr(gr_spot_rates[,1],1,4))
-gr_spot_rates[,2] <- 1/(fr_spot_rates[,2])
+eu_spot_rates[,2] <- 1/(eu_spot_rates[,2])
 
 in_spot_rates <- read.csv('./AEXINUS.csv', stringsAsFactors = FALSE)
 in_spot_rates[,1] <- as.numeric(substr(in_spot_rates[,1],1,4))
-in_spot_rates[,2]  <- 1/(in_spot_rates[,2])
 
-# Computing Relative PPP - USA is always the home currency
+ch_spot_rates <- read.csv('./AEXCHUS.csv', stringsAsFactors = FALSE)
+ch_spot_rates[,1] <- as.numeric(substr(ch_spot_rates[,1],1,4))
+
 
 # Helper function
 get_rate <- function(df,year){
