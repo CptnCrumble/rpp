@@ -3,14 +3,15 @@ library(purrr)
 library(dplyr)
 library(ggplot2)
 library(varhandle)
+library(reshape2)
 
 # Read in quarterly CPI data and calcualte annual averages to allign CPI data with spot rate data
-us_cpi <- read.csv('./USACPIALLMINMEI.csv')
-uk_cpi <- read.csv('./GBRCPIALLMINMEI.csv')
-fr_cpi <- read.csv('./FRACPIALLMINMEI.csv')
-gr_cpi <- read.csv('./DEUCPIALLMINMEI.csv')
-in_cpi <- read.csv('./INDCPIALLMINMEI.csv')
-ch_cpi <- read.csv('./CHNCPIALLMINMEI.csv')
+us_cpi <- read.csv('./USACPIALLMINMEI.csv',stringsAsFactors = FALSE)
+uk_cpi <- read.csv('./GBRCPIALLMINMEI.csv',stringsAsFactors = FALSE)
+fr_cpi <- read.csv('./FRACPIALLMINMEI.csv',stringsAsFactors = FALSE)
+gr_cpi <- read.csv('./DEUCPIALLMINMEI.csv',stringsAsFactors = FALSE)
+in_cpi <- read.csv('./INDCPIALLMINMEI.csv',stringsAsFactors = FALSE)
+ch_cpi <- read.csv('./CHNCPIALLMINMEI.csv',stringsAsFactors = FALSE)
 
 annualise <- function(dframe,start_year){
   out_df <- data.frame(Year=character(),Average_CPI=double(),stringsAsFactors = FALSE)
@@ -92,27 +93,45 @@ get_short_rpp <- function(start_year,end_year,foreign_spot,foreign_cpi,country_l
   absolute_error <- abs(rppp)
   
   out <- as.data.frame(cbind(years,delta_spot,home_inflation,f_inflation,delta_inflation,rppp, absolute_error,rep(country_label,times=length(delta_spot))))
-  names <- c("Year","Spot_rate_change","US_Inflation","Foreign_Inflation","Inflation_rate difference","RPPP_error","Absolute_RPPP_error","Country")
+  names <- c("Year","Spot_rate_change","US_Inflation","Foreign_Inflation","Inflation_rate_difference","RPPP_error","Absolute_RPPP_error","Country")
   colnames(out) <- names
   return(out)
 }
 
+china_short_rpp_values <- get_short_rpp(1993,2018,ch_spot_rates,ch_cpi_annual,"China")
 india_short_rpp_values <- get_short_rpp(1973,2018,in_spot_rates,in_cpi_annual,"India")
 uk_short_rpp_values <- get_short_rpp(1973,2018,uk_spot_rates,uk_cpi_annual,"UK")
+france_short_rpp_values <- get_short_rpp(1999,2018,eu_spot_rates,fr_cpi_annual, "France")
+germany_short_rpp_values <- get_short_rpp(1999,2018,eu_spot_rates,gr_cpi_annual, "Germany")
 
-plot_data <- rbind(india_short_rpp_values,uk_short_rpp_values)
-plot_data$Spot_rate_change <- unfactor(plot_data$Spot_rate_change)
-plot_data$RPPP_error <- unfactor(plot_data$RPPP_error)
-plot_data$Absolute_RPPP_error <- unfactor(plot_data$Absolute_RPPP_error)
-plot_data$`Inflation_rate difference` <- unfactor(plot_data$`Inflation_rate difference`)
+# Plot - France & Germany Inflation vs year
+fr_gr1 <- cbind.data.frame(unfactor(france_short_rpp_values$Year),unfactor(france_short_rpp_values$Foreign_Inflation),france_short_rpp_values$Country)
+colnames(fr_gr1) <- c("Year","Inflation","Country")
+fr_gr_2 <- cbind.data.frame(unfactor(germany_short_rpp_values$Year),unfactor(germany_short_rpp_values$Foreign_Inflation),germany_short_rpp_values$Country)
+colnames(fr_gr_2) <- c("Year","Inflation","Country")
+fr_gr <- rbind(fr_gr1,fr_gr_2)
+
+ggplot(data = fr_gr, aes(x=Year,y=Inflation, colour=Country))+
+  geom_point()+
+  geom_line()+
+  scale_colour_manual(values = c("#001489","#DD0000"))+
+  ylim(0,3)+
+  ylab("Inflation (%)")+
+  ggtitle("Inflation rates in France and Germany since adopting the Euro", subtitle = "Annual inflation from averaged CPI data")+
+  theme_classic()+
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5),
+    text = element_text(family = "Decima WE")
+  )
+  
+
 
 ggplot(data = plot_data, aes(Year,RPPP_error))+
   geom_point(aes(colour=Country))+
   geom_hline(yintercept = 0)+
   scale_x_discrete(breaks =c("1974","1980","1985","1990","1995","2000","2005","2010","2015","2018"))
 
-# Plot of FR vs German Inf rates over time - but the currency is the same!!!
-# Plot RPPP over time, any pattern, does it improve?
 
 # High & erratic inflation  - INdia 
 # Plot RPPP over time, any pattern, does it improve?
