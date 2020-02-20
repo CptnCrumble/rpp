@@ -6,12 +6,12 @@ library(varhandle)
 library(reshape2)
 
 # Read in quarterly CPI data and calcualte annual averages to allign CPI data with spot rate data
-us_cpi <- read.csv('./USACPIALLMINMEI.csv',stringsAsFactors = FALSE)
-uk_cpi <- read.csv('./GBRCPIALLMINMEI.csv',stringsAsFactors = FALSE)
-fr_cpi <- read.csv('./FRACPIALLMINMEI.csv',stringsAsFactors = FALSE)
-gr_cpi <- read.csv('./DEUCPIALLMINMEI.csv',stringsAsFactors = FALSE)
-in_cpi <- read.csv('./INDCPIALLMINMEI.csv',stringsAsFactors = FALSE)
-ch_cpi <- read.csv('./CHNCPIALLMINMEI.csv',stringsAsFactors = FALSE)
+us_cpi <- read.csv('./original_data/USACPIALLMINMEI.csv',stringsAsFactors = FALSE)
+uk_cpi <- read.csv('./original_data/GBRCPIALLMINMEI.csv',stringsAsFactors = FALSE)
+fr_cpi <- read.csv('./original_data/FRACPIALLMINMEI.csv',stringsAsFactors = FALSE)
+gr_cpi <- read.csv('./original_data/DEUCPIALLMINMEI.csv',stringsAsFactors = FALSE)
+in_cpi <- read.csv('./original_data/INDCPIALLMINMEI.csv',stringsAsFactors = FALSE)
+ch_cpi <- read.csv('./original_data/CHNCPIALLMINMEI.csv',stringsAsFactors = FALSE)
 
 annualise <- function(dframe,start_year){
   out_df <- data.frame(Year=character(),Average_CPI=double(),stringsAsFactors = FALSE)
@@ -41,18 +41,18 @@ ch_cpi_annual <- annualise(ch_cpi,1993)
 # Read in spot rate data, trim date structure
 # direct spot rates needed, conversion applied where necessary
 
-uk_spot_rates <- read.csv('./AEXUSUK.csv',stringsAsFactors = FALSE)
+uk_spot_rates <- read.csv('./original_data/AEXUSUK.csv',stringsAsFactors = FALSE)
 uk_spot_rates[,1] <- as.numeric(substr(uk_spot_rates[,1],1,4))
 uk_spot_rates[,2] <- 1/(uk_spot_rates[,2])
 
-eu_spot_rates <- read.csv('./AEXUSEU.csv',stringsAsFactors = FALSE)
+eu_spot_rates <- read.csv('./original_data/AEXUSEU.csv',stringsAsFactors = FALSE)
 eu_spot_rates[,1] <- as.numeric(substr(eu_spot_rates[,1],1,4))
 eu_spot_rates[,2] <- 1/(eu_spot_rates[,2])
 
-in_spot_rates <- read.csv('./AEXINUS.csv', stringsAsFactors = FALSE)
+in_spot_rates <- read.csv('./original_data/AEXINUS.csv', stringsAsFactors = FALSE)
 in_spot_rates[,1] <- as.numeric(substr(in_spot_rates[,1],1,4))
 
-ch_spot_rates <- read.csv('./AEXCHUS.csv', stringsAsFactors = FALSE)
+ch_spot_rates <- read.csv('./original_data/AEXCHUS.csv', stringsAsFactors = FALSE)
 ch_spot_rates[,1] <- as.numeric(substr(ch_spot_rates[,1],1,4))
 
 
