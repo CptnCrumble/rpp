@@ -10,7 +10,6 @@ us_cpi <- read.csv('./original_data/USACPIALLMINMEI.csv',stringsAsFactors = FALS
 uk_cpi <- read.csv('./original_data/GBRCPIALLMINMEI.csv',stringsAsFactors = FALSE)
 fr_cpi <- read.csv('./original_data/FRACPIALLMINMEI.csv',stringsAsFactors = FALSE)
 gr_cpi <- read.csv('./original_data/DEUCPIALLMINMEI.csv',stringsAsFactors = FALSE)
-#in_cpi <- read.csv('./original_data/INDCPIALLMINMEI.csv',stringsAsFactors = FALSE)
 ch_cpi <- read.csv('./original_data/CHNCPIALLMINMEI.csv',stringsAsFactors = FALSE)
 
 annualise <- function(dframe,start_year){
@@ -35,7 +34,6 @@ us_cpi_annual <- annualise(us_cpi,1960)
 uk_cpi_annual <- annualise(uk_cpi,1960)
 fr_cpi_annual <- annualise(fr_cpi,1960)
 gr_cpi_annual <- annualise(gr_cpi,1960)
-#in_cpi_annual <- annualise(in_cpi,1960)
 ch_cpi_annual <- annualise(ch_cpi,1993)
 
 # Read in spot rate data, trim date structure
@@ -43,14 +41,9 @@ ch_cpi_annual <- annualise(ch_cpi,1993)
 
 uk_spot_rates <- read.csv('./original_data/AEXUSUK.csv',stringsAsFactors = FALSE)
 uk_spot_rates[,1] <- as.numeric(substr(uk_spot_rates[,1],1,4))
-#uk_spot_rates[,2] <- 1/(uk_spot_rates[,2])
 
 eu_spot_rates <- read.csv('./original_data/AEXUSEU.csv',stringsAsFactors = FALSE)
 eu_spot_rates[,1] <- as.numeric(substr(eu_spot_rates[,1],1,4))
-#eu_spot_rates[,2] <- 1/(eu_spot_rates[,2])
-
-# in_spot_rates <- read.csv('./original_data/AEXINUS.csv', stringsAsFactors = FALSE)
-# in_spot_rates[,1] <- as.numeric(substr(in_spot_rates[,1],1,4))
 
 ch_spot_rates <- read.csv('./original_data/AEXCHUS.csv', stringsAsFactors = FALSE)
 ch_spot_rates[,1] <- as.numeric(substr(ch_spot_rates[,1],1,4))
@@ -81,33 +74,11 @@ get_short_rpp <- function(start_year,end_year,foreign_spot,foreign_cpi,country_l
 }
 
 china_short_rpp_values <- get_short_rpp(1994,2018,ch_spot_rates,ch_cpi_annual,"China")
-#india_short_rpp_values <- get_short_rpp(1973,2018,in_spot_rates,in_cpi_annual,"India")
 uk_short_rpp_values <- get_short_rpp(1973,2018,uk_spot_rates,uk_cpi_annual,"UK")
 france_short_rpp_values <- get_short_rpp(1999,2018,eu_spot_rates,fr_cpi_annual, "France")
 germany_short_rpp_values <- get_short_rpp(1999,2018,eu_spot_rates,gr_cpi_annual, "Germany")
-#
-# # Plot - France & Germany Inflation vs year
-# fr_gr1 <- cbind.data.frame(unfactor(france_short_rpp_values$Year),unfactor(france_short_rpp_values$Foreign_Inflation),unfactor(france_short_rpp_values$RPPP_error),france_short_rpp_values$Country)
-# colnames(fr_gr1) <- c("Year","Inflation","RPPP_Score","Country")
-# fr_gr_2 <- cbind.data.frame(unfactor(germany_short_rpp_values$Year),unfactor(germany_short_rpp_values$Foreign_Inflation),unfactor(germany_short_rpp_values$RPPP_error),germany_short_rpp_values$Country)
-# colnames(fr_gr_2) <- c("Year","Inflation","RPPP_Score","Country")
-# fr_gr <- rbind(fr_gr1,fr_gr_2)
-#
-# ggplot(data = fr_gr, aes(x=Year,y=Inflation, colour=Country))+
-#   geom_point()+
-#   geom_line()+
-#   scale_colour_manual(values = c("#001489","#DD0000"))+
-#   ylim(0,3)+
-#   ylab("Inflation (%)")+
-#   ggtitle("Inflation rates in France and Germany since adopting the Euro", subtitle = "Annual inflation from averaged CPI data")+
-#   theme_classic()+
-#   theme(
-#     plot.title = element_text(hjust = 0.5),
-#     plot.subtitle = element_text(hjust = 0.5),
-#     text = element_text(family = "Decima WE")
-#   )
 
-## PLot of RPPP errors, FR, GR
+## PLot of RPPP score, FR, GR
 ggplot(data = fr_gr, aes(x=Year,y=RPPP_Score, colour=Country))+
   geom_point(size=2,alpha=0.5)+
   scale_colour_manual(values = c("#001489","#DD0000"))+
@@ -147,9 +118,6 @@ ggplot(data = ch_plot, aes(x=Year, y=RPPP_Score))+
 # Plot of RPPP for the UK
 uk_plot <- cbind.data.frame(unfactor(uk_short_rpp_values$Year),unfactor(uk_short_rpp_values$RPPP_error),uk_short_rpp_values$Country)
 colnames(uk_plot) <- c("Year","RPPP_Score","Country")
-# in_plot <- cbind.data.frame(unfactor(india_short_rpp_values$Year),unfactor(india_short_rpp_values$RPPP_error),india_short_rpp_values$Country)
-# colnames(in_plot) <- c("Year","RPPP_Score","Country")
-# uk_in_plot <- rbind(uk_plot,in_plot)
 
 # Uk Plot
 ggplot(data = uk_plot, aes(x=Year,y=RPPP_Score, colour=Country))+
@@ -168,25 +136,6 @@ ggplot(data = uk_plot, aes(x=Year,y=RPPP_Score, colour=Country))+
   )+
   scale_x_discrete(name ="Year",
                    limits=c(1975,1980,1985,1990,1995,2000,2005,2010,2015,2018))
-
-# # India plot
-# ggplot(data = in_plot, aes(x=Year,y=RPPP_Score, colour=Country))+
-#   geom_point(size=3)+
-#   scale_colour_manual(values = c("#138808"))+
-#   ylab("RPPP Score")+
-#   ggtitle("RPPP Score for India", subtitle = "Dashed line marks RPPP equilibrium")+
-#   geom_hline(aes(yintercept = 0), linetype="dashed")+
-#   theme_classic()+
-#   theme(
-#     plot.title = element_text(hjust = 0.5),
-#     plot.subtitle = element_text(hjust = 0.5),
-#     text = element_text(family = "Decima WE"),
-#     legend.position = "none"
-#   )+
-#   scale_x_discrete(name ="Year",
-#                    limits=c(1975,1980,1985,1990,1995,2000,2005,2010,2015,2018))
-
-# Does RPPP get better over time ?
 
 # Calcualte RPP for every year where t-1 is a fixed base year
 get_long_rpp <- function(base_year,end_year,foreign_spot,foreign_cpi,country_label){
@@ -211,10 +160,6 @@ uk_long <- get_long_rpp(1974,2018,uk_spot_rates,uk_cpi_annual,"UK")
 uk_l_plot <- cbind.data.frame(unfactor(uk_long$time_period),unfactor(uk_long$rppp),uk_long$V8)
 colnames(uk_l_plot) <- c("Time_differential","RPPP_score","Country")
 
-# india_long <- get_long_rpp(1974,2018,in_spot_rates,in_cpi_annual,"India")
-# in_l_plot <- cbind.data.frame(unfactor(india_long$time_period),unfactor(india_long$rppp),india_long$V8)
-# colnames(in_l_plot) <- c("Time_differential","RPPP_score","Country")
-
 france_long <- get_long_rpp(1999,2018,eu_spot_rates,fr_cpi_annual,"France")
 fr_l_plot <- cbind.data.frame(unfactor(france_long$time_period),unfactor(france_long$rppp),france_long$V8)
 colnames(fr_l_plot) <- c("Time_differential","RPPP_score","Country")
@@ -227,10 +172,10 @@ china_long <- get_long_rpp(1994,2018,ch_spot_rates,ch_cpi_annual,"China")
 ch_l_plot <- cbind.data.frame(unfactor(china_long$time_period),unfactor(china_long$rppp),china_long$V8)
 colnames(ch_l_plot) <- c("Time_differential","RPPP_score","Country")
 
-rpvstp <- rbind(uk_l_plot,fr_l_plot,gr_l_plot,ch_l_plot)
+long_plot <- rbind(uk_l_plot,fr_l_plot,gr_l_plot,ch_l_plot)
 
 # Plot
-ggplot(data = rpvstp, aes(x=Time_differential,y=RPPP_score, colour=Country))+
+ggplot(data = long_plot, aes(x=Time_differential,y=RPPP_score, colour=Country))+
   geom_line()+
   geom_point(size=0.5)+
   scale_colour_manual(values = c("#138808","#001489","red","#FFCE00","#DD0000"))+
