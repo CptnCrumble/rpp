@@ -93,6 +93,15 @@ ggplot(data = fr_gr, aes(x=Year,y=RPPP_Score, colour=Country))+
     text = element_text(family = "Decima WE")
   )
 
+# t-test france
+f1 <- unfactor(france_short_rpp_values$Spot_rate_change)
+f2 <- unfactor(france_short_rpp_values$Inflation_rate_difference)
+t.test(f1,f2)
+#t-test germany
+g1 <- unfactor(germany_short_rpp_values$Spot_rate_change)
+g2 <- unfactor(germany_short_rpp_values$Inflation_rate_difference)
+t.test(g1,g2)
+
 
 # Plot of China RPPP over time
 ch_plot <- cbind.data.frame(unfactor(china_short_rpp_values$Year),unfactor(china_short_rpp_values$RPPP_error),china_short_rpp_values$Country)
@@ -114,6 +123,10 @@ ggplot(data = ch_plot, aes(x=Year, y=RPPP_Score))+
   scale_x_discrete(name ="Year",
                    limits=c(1990,1995,2000,2005,2010,2015,2018))
 
+# China t-test
+c1 <- unfactor(china_short_rpp_values$Spot_rate_change)
+c2 <- unfactor(china_short_rpp_values$Inflation_rate_difference)
+t.test(c1,c2)
 
 # Plot of RPPP for the UK
 uk_plot <- cbind.data.frame(unfactor(uk_short_rpp_values$Year),unfactor(uk_short_rpp_values$RPPP_error),uk_short_rpp_values$Country)
@@ -136,6 +149,15 @@ ggplot(data = uk_plot, aes(x=Year,y=RPPP_Score, colour=Country))+
   )+
   scale_x_discrete(name ="Year",
                    limits=c(1975,1980,1985,1990,1995,2000,2005,2010,2015,2018))
+
+# uk t-test
+u1 <- unfactor(uk_short_rpp_values$Spot_rate_change)
+u2 <- unfactor(uk_short_rpp_values$Inflation_rate_difference)
+t.test(u1,u2)
+
+
+# ---Does RPPP improve with  increasing dT ? ---
+# Dropped from final essay, not enough space.
 
 # Calcualte RPP for every year where t-1 is a fixed base year
 get_long_rpp <- function(base_year,end_year,foreign_spot,foreign_cpi,country_label){
